@@ -1,0 +1,57 @@
+version: '3.5'
+
+services:
+  redis:
+    container_name: redis
+    image: redis:5.0-alpine
+    restart: always
+    ports:
+      - 6379:6379
+    volumes:
+      - redis_db_data:/data
+    networks:
+      - my-network
+  asynqmon:
+    container_name: asynqmon
+    image: hibiken/asynqmon
+    restart: always
+    ports:
+      - 8080:8080
+    depends_on:
+      - redis
+    networks:
+      - my-network
+    environment:
+      REDIS_ADDR: redis:6379
+  postgres:
+    image: postgres:latest
+    restart: always
+    ports:
+      - 5432:5432
+    environment:
+        POSTGRES_PASSWORD: pg
+        POSTGRES_USER: pg
+    volumes:
+        - postgres:/var/lib/postgresql/data
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    restart: always
+    environment:
+        PGADMIN_DEFAULT_EMAIL: admin@pgadmin.com
+        PGADMIN_DEFAULT_PASSWORD: pgadmin
+        PGADMIN_LISTEN_PORT: 80
+    ports:
+        - 8181:80
+    volumes:
+        - pgadmin:/var/lib/pgadmin
+    depends_on:
+        - postgres
+
+networks:
+  my-network:
+
+volumes:
+  redis_db_data:
+    external: false
+  postgres:
+  pgadmin:
