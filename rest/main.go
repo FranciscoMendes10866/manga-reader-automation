@@ -24,6 +24,7 @@ func main() {
 	r.Use(middleware.AllowContentType("application/json"))
 
 	config.Connect()
+	config.ConnectBucket()
 
 	r.Use(cors.Handler(cors.Options{
 		AllowedOrigins:   []string{"*"},
@@ -41,8 +42,9 @@ func main() {
 
 		if len(newEntry.Name) > 2 {
 			newMangaEntry := new(entities.MangaEntity)
+			link, _ := services.UploadImageFromURL(newEntry.Thumbnail, newEntry.Name)
 			newMangaEntry.Name = newEntry.Name
-			newMangaEntry.Thumbnail = newEntry.Thumbnail
+			newMangaEntry.Thumbnail = link
 			newMangaEntry.Description = newEntry.Description
 
 			config.Database.Create(&newMangaEntry)
@@ -51,7 +53,7 @@ func main() {
 				client := asynq.NewClient(asynq.RedisClientOpt{Addr: redisAddr})
 				defer client.Close()
 
-				task, _ := tasks.NewScrapSingleChapterTask(newMangaEntry.ID, newEntry.Chapters)
+				task, _ := tasks.NewScrapSingleChapterTask(newMangaEntry.ID, newEntry.Chapters, newMangaEntry.Name)
 				client.Enqueue(task)
 			}
 		}

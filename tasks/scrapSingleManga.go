@@ -41,8 +41,9 @@ func HandleScrapSingleMangaTask(ctx context.Context, t *asynq.Task) error {
 
 		if len(newEntry.Name) > 2 {
 			newDatabaseEntry := new(entities.MangaEntity)
+			link, _ := services.UploadImageFromURL(newEntry.Thumbnail, newEntry.Name)
 			newDatabaseEntry.Name = newEntry.Name
-			newDatabaseEntry.Thumbnail = newEntry.Thumbnail
+			newDatabaseEntry.Thumbnail = link
 			newDatabaseEntry.Description = newEntry.Description
 
 			config.Database.Create(&newDatabaseEntry)
@@ -51,7 +52,7 @@ func HandleScrapSingleMangaTask(ctx context.Context, t *asynq.Task) error {
 				client := asynq.NewClient(asynq.RedisClientOpt{Addr: redisAddr})
 				defer client.Close()
 
-				task, _ := NewScrapSingleChapterTask(newDatabaseEntry.ID, newEntry.Chapters)
+				task, _ := NewScrapSingleChapterTask(newDatabaseEntry.ID, newEntry.Chapters, newDatabaseEntry.Name)
 				client.Enqueue(task)
 			}
 		}
@@ -62,7 +63,7 @@ func HandleScrapSingleMangaTask(ctx context.Context, t *asynq.Task) error {
 			client := asynq.NewClient(asynq.RedisClientOpt{Addr: redisAddr})
 			defer client.Close()
 
-			task, _ := NewScrapSingleChapterTask(mangaInstance.ID, newChapters)
+			task, _ := NewScrapSingleChapterTask(mangaInstance.ID, newChapters, mangaInstance.Name)
 			client.Enqueue(task)
 		}
 	}

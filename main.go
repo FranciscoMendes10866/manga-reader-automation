@@ -10,6 +10,7 @@ const redisAddr = "127.0.0.1:6379"
 
 func main() {
 	config.Connect()
+	config.ConnectBucket()
 
 	srv := asynq.NewServer(
 		asynq.RedisClientOpt{Addr: redisAddr},

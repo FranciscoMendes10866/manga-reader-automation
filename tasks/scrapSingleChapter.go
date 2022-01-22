@@ -14,12 +14,13 @@ import (
 const TypeScrapSingleChapter = "scrap:chapter"
 
 type ScrapSingleChapterPayload struct {
-	MangaID  uint
-	Chapters []services.IManga
+	MangaID   uint
+	MangaName string
+	Chapters  []services.IManga
 }
 
-func NewScrapSingleChapterTask(id uint, chapters []services.IManga) (*asynq.Task, error) {
-	payload, err := json.Marshal(ScrapSingleChapterPayload{MangaID: id, Chapters: chapters})
+func NewScrapSingleChapterTask(id uint, chapters []services.IManga, MangaName string) (*asynq.Task, error) {
+	payload, err := json.Marshal(ScrapSingleChapterPayload{MangaID: id, MangaName: MangaName, Chapters: chapters})
 	if err != nil {
 		return nil, err
 	}
@@ -33,6 +34,7 @@ func HandleScrapSingleChapterTask(ctx context.Context, t *asynq.Task) error {
 	}
 
 	mangaId := payload.MangaID
+	mangaName := payload.MangaName
 	chaptersData := payload.Chapters
 
 	var databaseChapters []entities.ChapterEntity
@@ -61,8 +63,15 @@ func HandleScrapSingleChapterTask(ctx context.Context, t *asynq.Task) error {
 				newChapterEntry := new(entities.ChapterEntity)
 				newChapterEntry.Name = chapter.Name
 
-				pagesString := ""
+				var uploadedImages []string
+
 				for _, page := range pages {
+					imageURL, _ := services.UploadImageFromURL(page, mangaName)
+					uploadedImages = append(uploadedImages, imageURL)
+				}
+
+				pagesString := ""
+				for _, page := range uploadedImages {
 					pagesString += page + ","
 				}
 				pagesString = pagesString[:len(pagesString)-1]
