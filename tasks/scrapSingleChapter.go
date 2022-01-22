@@ -8,18 +8,19 @@ import (
 	"github.com/FranciscoMendes10866/queues/config"
 	"github.com/FranciscoMendes10866/queues/entities"
 	"github.com/FranciscoMendes10866/queues/services"
+	"github.com/FranciscoMendes10866/queues/types"
 	"github.com/hibiken/asynq"
 )
 
 const TypeScrapSingleChapter = "scrap:chapter"
 
 type ScrapSingleChapterPayload struct {
-	MangaID   uint
+	MangaID   string
 	MangaName string
-	Chapters  []services.IManga
+	Chapters  []types.IManga
 }
 
-func NewScrapSingleChapterTask(id uint, chapters []services.IManga, MangaName string) (*asynq.Task, error) {
+func NewScrapSingleChapterTask(id string, chapters []types.IManga, MangaName string) (*asynq.Task, error) {
 	payload, err := json.Marshal(ScrapSingleChapterPayload{MangaID: id, MangaName: MangaName, Chapters: chapters})
 	if err != nil {
 		return nil, err
@@ -40,7 +41,7 @@ func HandleScrapSingleChapterTask(ctx context.Context, t *asynq.Task) error {
 	var databaseChapters []entities.ChapterEntity
 	config.Database.Where("manga_id = ?", mangaId).Find(&databaseChapters)
 
-	var newChapters []services.IManga
+	var newChapters []types.IManga
 
 	for _, chapter := range chaptersData {
 		var found bool

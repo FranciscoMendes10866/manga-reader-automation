@@ -3,16 +3,16 @@ package tasks
 import (
 	"context"
 
+	"github.com/FranciscoMendes10866/queues/helpers"
 	"github.com/FranciscoMendes10866/queues/services"
+	"github.com/FranciscoMendes10866/queues/types"
 	"github.com/hibiken/asynq"
 )
-
-const redisAddr = "127.0.0.1:6379"
 
 const TypeScheduled = "scheduled:task"
 
 type ScheduledPayload struct {
-	Mangas []services.IManga
+	Mangas []types.IManga
 }
 
 func NewScheduledTask() (*asynq.Task, error) {
@@ -22,7 +22,7 @@ func NewScheduledTask() (*asynq.Task, error) {
 func HandleScheduledTask(ctx context.Context, t *asynq.Task) error {
 	mangas := services.GetMangasList()
 
-	client := asynq.NewClient(asynq.RedisClientOpt{Addr: redisAddr})
+	client := asynq.NewClient(asynq.RedisClientOpt{Addr: helpers.RedisAddress})
 	defer client.Close()
 
 	for _, manga := range mangas {

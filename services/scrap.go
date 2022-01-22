@@ -4,28 +4,17 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/FranciscoMendes10866/queues/types"
 	"github.com/gocolly/colly"
 )
 
-type IManga struct {
-	Name string
-	URL  string
-}
-
-type INewMangaEntry struct {
-	Thumbnail   string
-	Name        string
-	Description string
-	Chapters    []IManga
-}
-
 var c = colly.NewCollector()
 
-func GetMangasList() []IManga {
-	var mangas []IManga
+func GetMangasList() []types.IManga {
+	var mangas []types.IManga
 
 	c.OnHTML("div.post-title", func(e *colly.HTMLElement) {
-		manga := IManga{
+		manga := types.IManga{
 			Name: strings.Replace(e.Text, "\n", "", -1),
 			URL:  e.ChildAttr("a[href]", "href"),
 		}
@@ -41,11 +30,11 @@ func GetMangasList() []IManga {
 	return mangas
 }
 
-func NewMangaEntry(url string) INewMangaEntry {
+func NewMangaEntry(url string) types.INewMangaEntry {
 	var thumbnail string
 	var name string
 	var description string
-	var chapters []IManga
+	var chapters []types.IManga
 
 	c.OnHTML("div.post-title", func(e *colly.HTMLElement) {
 		name = strings.Replace(e.Text, "\n", "", -1)
@@ -65,7 +54,7 @@ func NewMangaEntry(url string) INewMangaEntry {
 		element := e.DOM
 		link, _ := element.Find("a").Attr("href")
 
-		chapters = append(chapters, IManga{
+		chapters = append(chapters, types.IManga{
 			Name: strings.Replace(element.Find("a").Text(), "\n", "", -1),
 			URL:  link,
 		})
@@ -77,7 +66,7 @@ func NewMangaEntry(url string) INewMangaEntry {
 
 	c.Visit(url)
 
-	return INewMangaEntry{
+	return types.INewMangaEntry{
 		Name:        name,
 		Description: description,
 		Thumbnail:   thumbnail,
@@ -85,14 +74,14 @@ func NewMangaEntry(url string) INewMangaEntry {
 	}
 }
 
-func GetMangaChapters(url string) []IManga {
-	var chapters []IManga
+func GetMangaChapters(url string) []types.IManga {
+	var chapters []types.IManga
 
 	c.OnHTML("li.wp-manga-chapter", func(e *colly.HTMLElement) {
 		element := e.DOM
 		link, _ := element.Find("a").Attr("href")
 
-		chapters = append(chapters, IManga{
+		chapters = append(chapters, types.IManga{
 			Name: strings.Replace(element.Find("a").Text(), "\n", "", -1),
 			URL:  link,
 		})

@@ -7,17 +7,19 @@ import (
 
 	"github.com/FranciscoMendes10866/queues/config"
 	"github.com/FranciscoMendes10866/queues/entities"
+	"github.com/FranciscoMendes10866/queues/helpers"
 	"github.com/FranciscoMendes10866/queues/services"
+	"github.com/FranciscoMendes10866/queues/types"
 	"github.com/hibiken/asynq"
 )
 
 const TypeScrapSingleManga = "scrap:manga"
 
 type ScrapSingleMangaPayload struct {
-	Manga services.IManga
+	Manga types.IManga
 }
 
-func NewScrapSingleMangaTask(manga services.IManga) (*asynq.Task, error) {
+func NewScrapSingleMangaTask(manga types.IManga) (*asynq.Task, error) {
 	payload, err := json.Marshal(ScrapSingleMangaPayload{Manga: manga})
 	if err != nil {
 		return nil, err
@@ -48,8 +50,8 @@ func HandleScrapSingleMangaTask(ctx context.Context, t *asynq.Task) error {
 
 			config.Database.Create(&newDatabaseEntry)
 
-			if len(newEntry.Chapters) > 0 && newDatabaseEntry.ID != 0 {
-				client := asynq.NewClient(asynq.RedisClientOpt{Addr: redisAddr})
+			if len(newEntry.Chapters) > 0 && newDatabaseEntry.ID != "" {
+				client := asynq.NewClient(asynq.RedisClientOpt{Addr: helpers.RedisAddress})
 				defer client.Close()
 
 				task, _ := NewScrapSingleChapterTask(newDatabaseEntry.ID, newEntry.Chapters, newDatabaseEntry.Name)
@@ -60,7 +62,7 @@ func HandleScrapSingleMangaTask(ctx context.Context, t *asynq.Task) error {
 		newChapters := services.GetMangaChapters(currentManga.URL)
 
 		if len(newChapters) > 0 {
-			client := asynq.NewClient(asynq.RedisClientOpt{Addr: redisAddr})
+			client := asynq.NewClient(asynq.RedisClientOpt{Addr: helpers.RedisAddress})
 			defer client.Close()
 
 			task, _ := NewScrapSingleChapterTask(mangaInstance.ID, newChapters, mangaInstance.Name)
