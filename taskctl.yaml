@@ -1,0 +1,14 @@
+pipelines:
+  pipeline1:
+    - task: task1
+    - task: task2
+
+tasks:
+  task1:
+    description: "⚙️⚙️⚙️ Running the Queue Processors ⚙️⚙️⚙️"
+    command:
+      - go run main.go
+  task2:
+    description: "🕒🕒🕒 Running the Queue Scheduler 🕒🕒🕒"
+    command:
+      - go run scheduler/main.go

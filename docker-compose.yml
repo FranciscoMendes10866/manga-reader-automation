@@ -24,6 +24,7 @@ services:
     environment:
       REDIS_ADDR: redis:6379
   postgres:
+    container_name: postgres
     image: postgres:latest
     restart: always
     ports:
@@ -33,19 +34,6 @@ services:
         POSTGRES_USER: pg
     volumes:
         - postgres:/var/lib/postgresql/data
-  pgadmin:
-    image: dpage/pgadmin4:latest
-    restart: always
-    environment:
-        PGADMIN_DEFAULT_EMAIL: admin@pgadmin.com
-        PGADMIN_DEFAULT_PASSWORD: pgadmin
-        PGADMIN_LISTEN_PORT: 80
-    ports:
-        - 8181:80
-    volumes:
-        - pgadmin:/var/lib/pgadmin
-    depends_on:
-        - postgres
 
 networks:
   my-network:
@@ -54,4 +42,3 @@ volumes:
   redis_db_data:
     external: false
   postgres:
-  pgadmin:
