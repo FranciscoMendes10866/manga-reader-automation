@@ -2,6 +2,7 @@ pipelines:
   pipeline1:
     - task: task1
     - task: task2
+    - task: task3
 
 tasks:
   task1:
@@ -12,3 +13,7 @@ tasks:
     description: "🕒🕒🕒 Running the Queue Scheduler 🕒🕒🕒"
     command:
       - go run scheduler/main.go
+  task3:
+    description: "☢️☢️☢️ Running the REST API ☢️☢️☢️"
+    command:
+      - go run rest/main.go
