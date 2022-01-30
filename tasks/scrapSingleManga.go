@@ -39,7 +39,33 @@ func HandleScrapSingleMangaTask(ctx context.Context, t *asynq.Task) error {
 	config.Database.Where("name = ?", currentManga.Name).First(&mangaInstance)
 
 	if mangaInstance.Name == "" && len(currentManga.Name) > 2 {
+		var databaseCategories []entities.CategoriesEntity
+		config.Database.Table("manga_entities").Find(&databaseCategories)
+
 		newEntry := services.NewMangaEntry(currentManga.URL)
+
+		if len(databaseCategories) > 0 {
+			var categoriesToAdd []string
+			for _, category := range newEntry.Categories {
+				var categoryExists bool
+				for _, databaseCategory := range databaseCategories {
+					if category == databaseCategory.Name {
+						categoryExists = true
+					}
+				}
+				if !categoryExists {
+					categoriesToAdd = append(categoriesToAdd, category)
+				}
+			}
+
+			if len(categoriesToAdd) > 0 {
+				for _, category := range categoriesToAdd {
+					var newCategory entities.CategoriesEntity
+					newCategory.Name = category
+					config.Database.Create(&newCategory)
+				}
+			}
+		}
 
 		if len(newEntry.Name) > 2 {
 			newDatabaseEntry := new(entities.MangaEntity)
@@ -55,6 +81,31 @@ func HandleScrapSingleMangaTask(ctx context.Context, t *asynq.Task) error {
 
 				task, _ := NewScrapSingleChapterTask(newDatabaseEntry.ID, newEntry.Chapters, newDatabaseEntry.Name)
 				client.Enqueue(task)
+
+				var categoriesToAdd []string
+				for _, category := range newEntry.Categories {
+					var categoryExists bool
+					for _, databaseCategory := range databaseCategories {
+						if category == databaseCategory.Name {
+							categoryExists = true
+						}
+					}
+					if !categoryExists {
+						categoriesToAdd = append(categoriesToAdd, category)
+					}
+				}
+
+				if len(categoriesToAdd) > 0 {
+					for _, category := range categoriesToAdd {
+						var newCategory entities.CategoriesEntity
+						config.Database.Where("name = ?", category).First(&newCategory)
+
+						config.Database.Table("manga_categories").Create(map[string]interface{}{
+							"manga_entity_id":      newDatabaseEntry.ID,
+							"categories_entity_id": newCategory.ID,
+						})
+					}
+				}
 			}
 		}
 	} else if mangaInstance.Name != "" && len(currentManga.Name) > 2 {

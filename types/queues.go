@@ -12,3 +12,8 @@ type INewMangaEntry struct {
 	Chapters    []IManga
 	Categories  []string
 }
+
+type IMangaCategoryDB struct {
+	MangaID    string
+	CategoryID string
+}
