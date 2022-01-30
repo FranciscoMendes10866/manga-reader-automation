@@ -40,6 +40,7 @@ func NewMangaEntry(url string) types.INewMangaEntry {
 	var name string
 	var description string
 	var chapters []types.IManga
+	var categories []string
 
 	c.SetProxyFunc(config.SetScrappingProxy())
 	c.Limit(helpers.ScrapLimitOptions)
@@ -50,6 +51,16 @@ func NewMangaEntry(url string) types.INewMangaEntry {
 
 	c.OnHTML("div.summary__content", func(e *colly.HTMLElement) {
 		description = strings.Replace(e.Text, "\n", "", -1)
+	})
+
+	c.OnHTML("div.genres-content", func(e *colly.HTMLElement) {
+		element := e.DOM
+		category := element.Text()
+		var splited = strings.Split(category, ",")
+
+		for _, value := range splited {
+			categories = append(categories, strings.TrimSpace(value))
+		}
 	})
 
 	c.OnHTML("div.summary_image", func(e *colly.HTMLElement) {
@@ -79,6 +90,7 @@ func NewMangaEntry(url string) types.INewMangaEntry {
 		Description: description,
 		Thumbnail:   thumbnail,
 		Chapters:    chapters,
+		Categories:  categories,
 	}
 }
 
