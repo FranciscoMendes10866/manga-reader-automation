@@ -3,7 +3,7 @@ version: '3.5'
 services:
   redis:
     container_name: redis
-    image: redis:5.0-alpine
+    image: redis:alpine
     restart: always
     ports:
       - 6379:6379
@@ -25,7 +25,7 @@ services:
       REDIS_ADDR: redis:6379
   postgres:
     container_name: postgres
-    image: postgres:latest
+    image: postgres:alpine
     restart: always
     ports:
       - 5432:5432

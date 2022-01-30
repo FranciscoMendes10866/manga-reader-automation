@@ -21,9 +21,8 @@ func ScrapOnDemand(w http.ResponseWriter, r *http.Request) {
 
 	if len(newEntry.Name) > 2 {
 		newMangaEntry := new(entities.MangaEntity)
-		link, _ := services.UploadImageFromURL(newEntry.Thumbnail, newEntry.Name)
 		newMangaEntry.Name = newEntry.Name
-		newMangaEntry.Thumbnail = link
+		newMangaEntry.Thumbnail = newEntry.Thumbnail
 		newMangaEntry.Description = newEntry.Description
 
 		config.Database.Create(&newMangaEntry)

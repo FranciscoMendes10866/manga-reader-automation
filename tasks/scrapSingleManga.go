@@ -43,9 +43,8 @@ func HandleScrapSingleMangaTask(ctx context.Context, t *asynq.Task) error {
 
 		if len(newEntry.Name) > 2 {
 			newDatabaseEntry := new(entities.MangaEntity)
-			link, _ := services.UploadImageFromURL(newEntry.Thumbnail, newEntry.Name)
 			newDatabaseEntry.Name = newEntry.Name
-			newDatabaseEntry.Thumbnail = link
+			newDatabaseEntry.Thumbnail = newEntry.Thumbnail
 			newDatabaseEntry.Description = newEntry.Description
 
 			config.Database.Create(&newDatabaseEntry)

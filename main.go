@@ -9,7 +9,6 @@ import (
 
 func main() {
 	config.Connect()
-	config.ConnectBucket()
 
 	srv := asynq.NewServer(
 		asynq.RedisClientOpt{Addr: helpers.RedisAddress},

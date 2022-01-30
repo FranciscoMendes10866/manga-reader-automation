@@ -7,11 +7,13 @@ import (
 
 type MangaEntity struct {
 	gorm.Model
-	ID          string          `gorm:"primaryKey;"`
-	Name        string          `json:"name" gorm:"not null;unique;index"`
-	Thumbnail   string          `json:"thumbnail" gorm:"not null"`
-	Description string          `json:"description" gorm:"not null"`
-	Chapters    []ChapterEntity `gorm:"foreignKey:MangaID"`
+	ID          string             `gorm:"primaryKey;"`
+	Name        string             `json:"name" gorm:"not null;unique;index"`
+	Thumbnail   string             `json:"thumbnail" gorm:"not null"`
+	Description string             `json:"description" gorm:"not null"`
+	Chapters    []ChapterEntity    `gorm:"foreignKey:MangaID"`
+	AuthorID    string             `json:"author_id" gorm:"not null"`
+	Categories  []CategoriesEntity `gorm:"many2many:manga_categories;"`
 }
 
 func (manga *MangaEntity) BeforeCreate(db *gorm.DB) error {
