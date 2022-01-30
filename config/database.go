@@ -21,7 +21,7 @@ func Connect() error {
 		panic(err)
 	}
 
-	Database.AutoMigrate(&entities.AuthorsEntity{}, &entities.MangaEntity{}, &entities.ChapterEntity{}, &entities.PagesEntity{})
+	Database.AutoMigrate(&entities.MangaEntity{}, &entities.ChapterEntity{}, &entities.PagesEntity{})
 
 	return nil
 }
