@@ -16,7 +16,7 @@ func main() {
 
 	task, _ := tasks.NewScheduledTask()
 
-	entryID, err := scheduler.Register("@every 30m", task)
+	entryID, err := scheduler.Register("@every 6h", task)
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -10,4 +10,10 @@ type INewMangaEntry struct {
 	Name        string
 	Description string
 	Chapters    []IManga
+	Categories  []string
+}
+
+type IMangaCategoryDB struct {
+	MangaID    string
+	CategoryID string
 }

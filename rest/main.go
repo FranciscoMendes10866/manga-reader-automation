@@ -13,7 +13,6 @@ import (
 
 func main() {
 	config.Connect()
-	config.ConnectBucket()
 
 	r := chi.NewRouter()
 	r.Use(middleware.NoCache)

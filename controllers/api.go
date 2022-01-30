@@ -17,13 +17,38 @@ func ScrapOnDemand(w http.ResponseWriter, r *http.Request) {
 	var body types.IScrapOnDemandBody
 	json.NewDecoder(r.Body).Decode(&body)
 
+	var databaseCategories []entities.CategoriesEntity
+	config.Database.Table("manga_entities").Find(&databaseCategories)
+
 	newEntry := services.NewMangaEntry(body.URL)
+
+	if len(databaseCategories) > 0 {
+		var categoriesToAdd []string
+		for _, category := range newEntry.Categories {
+			var categoryExists bool
+			for _, databaseCategory := range databaseCategories {
+				if category == databaseCategory.Name {
+					categoryExists = true
+				}
+			}
+			if !categoryExists {
+				categoriesToAdd = append(categoriesToAdd, category)
+			}
+		}
+
+		if len(categoriesToAdd) > 0 {
+			for _, category := range categoriesToAdd {
+				var newCategory entities.CategoriesEntity
+				newCategory.Name = category
+				config.Database.Create(&newCategory)
+			}
+		}
+	}
 
 	if len(newEntry.Name) > 2 {
 		newMangaEntry := new(entities.MangaEntity)
-		link, _ := services.UploadImageFromURL(newEntry.Thumbnail, newEntry.Name)
 		newMangaEntry.Name = newEntry.Name
-		newMangaEntry.Thumbnail = link
+		newMangaEntry.Thumbnail = newEntry.Thumbnail
 		newMangaEntry.Description = newEntry.Description
 
 		config.Database.Create(&newMangaEntry)
@@ -34,6 +59,31 @@ func ScrapOnDemand(w http.ResponseWriter, r *http.Request) {
 
 			task, _ := tasks.NewScrapSingleChapterTask(newMangaEntry.ID, newEntry.Chapters, newMangaEntry.Name)
 			client.Enqueue(task)
+
+			var categoriesToAdd []string
+			for _, category := range newEntry.Categories {
+				var categoryExists bool
+				for _, databaseCategory := range databaseCategories {
+					if category == databaseCategory.Name {
+						categoryExists = true
+					}
+				}
+				if !categoryExists {
+					categoriesToAdd = append(categoriesToAdd, category)
+				}
+			}
+
+			if len(categoriesToAdd) > 0 {
+				for _, category := range categoriesToAdd {
+					var newCategory entities.CategoriesEntity
+					config.Database.Where("name = ?", category).First(&newCategory)
+
+					config.Database.Table("manga_categories").Create(map[string]interface{}{
+						"manga_entity_id":      newMangaEntry.ID,
+						"categories_entity_id": newCategory.ID,
+					})
+				}
+			}
 		}
 	}
 }

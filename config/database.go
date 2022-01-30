@@ -8,7 +8,7 @@ import (
 )
 
 var Database *gorm.DB
-var DATABASE_URI string = "host=localhost user=pg password=pg dbname=manga port=5432 sslmode=disable"
+var DATABASE_URI string = "host=localhost user=pg password=pg dbname=dango port=5432 sslmode=disable"
 
 func Connect() error {
 	var err error
@@ -21,7 +21,7 @@ func Connect() error {
 		panic(err)
 	}
 
-	Database.AutoMigrate(&entities.MangaEntity{}, &entities.ChapterEntity{})
+	Database.AutoMigrate(&entities.MangaEntity{}, &entities.ChapterEntity{}, &entities.PagesEntity{})
 
 	return nil
 }
