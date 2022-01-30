@@ -1,6 +1,14 @@
 version: '3.5'
 
 services:
+  proxy:
+    container_name: tor-proxy
+    image: peterdavehello/tor-socks-proxy:latest
+    restart: always
+    ports:
+      - 9150:9150/tcp
+    networks:
+      - my-network
   redis:
     container_name: redis
     image: redis:alpine
