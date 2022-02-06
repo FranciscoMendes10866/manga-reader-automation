@@ -65,7 +65,16 @@ func HandleScrapSingleMangaTask(ctx context.Context, t *asynq.Task) error {
 					config.Database.Create(&newCategory)
 				}
 			}
+		} else {
+			for _, category := range newEntry.Categories {
+				var newCategory entities.CategoriesEntity
+				newCategory.Name = category
+				config.Database.Create(&newCategory)
+			}
 		}
+
+		var refetchedDatabaseCategories []entities.CategoriesEntity
+		config.Database.Table("manga_categories").Find(&refetchedDatabaseCategories)
 
 		if len(newEntry.Name) > 2 {
 			newDatabaseEntry := new(entities.MangaEntity)
@@ -85,7 +94,7 @@ func HandleScrapSingleMangaTask(ctx context.Context, t *asynq.Task) error {
 				var categoriesToAdd []string
 				for _, category := range newEntry.Categories {
 					var categoryExists bool
-					for _, databaseCategory := range databaseCategories {
+					for _, databaseCategory := range refetchedDatabaseCategories {
 						if category == databaseCategory.Name {
 							categoryExists = true
 						}
