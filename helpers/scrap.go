@@ -7,5 +7,6 @@ import (
 )
 
 var ScrapLimitOptions = &colly.LimitRule{
-	RandomDelay: 7 * time.Second,
+	RandomDelay: 5 * time.Second,
+	Parallelism: 2,
 }

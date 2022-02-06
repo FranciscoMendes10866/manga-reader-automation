@@ -3,6 +3,7 @@ package services
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/FranciscoMendes10866/queues/config"
 	"github.com/FranciscoMendes10866/queues/helpers"
@@ -10,12 +11,13 @@ import (
 	"github.com/gocolly/colly"
 )
 
-var c = colly.NewCollector()
+var c = colly.NewCollector(colly.MaxDepth(1), colly.DetectCharset(), colly.AllowURLRevisit())
 
 func GetMangasList() []types.IManga {
 	var mangas []types.IManga
 
 	c.SetProxyFunc(config.SetScrappingProxy())
+	c.SetRequestTimeout(120 * time.Second)
 	c.Limit(helpers.ScrapLimitOptions)
 
 	c.OnHTML("div.post-title", func(e *colly.HTMLElement) {
@@ -43,6 +45,7 @@ func NewMangaEntry(url string) types.INewMangaEntry {
 	var categories []string
 
 	c.SetProxyFunc(config.SetScrappingProxy())
+	c.SetRequestTimeout(120 * time.Second)
 	c.Limit(helpers.ScrapLimitOptions)
 
 	c.OnHTML("div.post-title", func(e *colly.HTMLElement) {
@@ -98,6 +101,7 @@ func GetMangaChapters(url string) []types.IManga {
 	var chapters []types.IManga
 
 	c.SetProxyFunc(config.SetScrappingProxy())
+	c.SetRequestTimeout(120 * time.Second)
 	c.Limit(helpers.ScrapLimitOptions)
 
 	c.OnHTML("li.wp-manga-chapter", func(e *colly.HTMLElement) {
@@ -123,6 +127,7 @@ func GetChapterPages(url string) []string {
 	var pages []string
 
 	c.SetProxyFunc(config.SetScrappingProxy())
+	c.SetRequestTimeout(120 * time.Second)
 	c.Limit(helpers.ScrapLimitOptions)
 
 	c.OnHTML("div.page-break", func(e *colly.HTMLElement) {
