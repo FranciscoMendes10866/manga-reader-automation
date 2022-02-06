@@ -1,6 +1,16 @@
-version: '3.5'
+version: "3.8"
 
 services:
+  memcached:
+    image: memcached:alpine
+    container_name: memcached
+    restart: always
+    ports:
+      - 11211:11211
+    networks:
+      - my-network
+    volumes:
+      - memcached-data:/data
   proxy:
     container_name: tor-proxy
     image: peterdavehello/tor-socks-proxy:latest
@@ -50,3 +60,5 @@ volumes:
   redis_db_data:
     external: false
   postgres:
+  memcached-data:
+  

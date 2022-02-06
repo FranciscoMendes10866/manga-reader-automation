@@ -6,14 +6,14 @@ pipelines:
 
 tasks:
   task1:
-    description: "⚙️⚙️⚙️ Running the Queue Processors ⚙️⚙️⚙️"
+    description: "Queue Processors"
     command:
       - go run main.go
   task2:
-    description: "🕒🕒🕒 Running the Queue Scheduler 🕒🕒🕒"
+    description: "Queue Scheduler"
     command:
       - go run scheduler/main.go
   task3:
-    description: "☢️☢️☢️ Running the REST API ☢️☢️☢️"
+    description: "REST API"
     command:
       - go run rest/main.go
