@@ -40,7 +40,7 @@ func HandleScrapSingleMangaTask(ctx context.Context, t *asynq.Task) error {
 
 	if mangaInstance.Name == "" && len(currentManga.Name) > 2 {
 		var databaseCategories []entities.CategoriesEntity
-		config.Database.Table("manga_entities").Find(&databaseCategories)
+		config.Database.Table("manga_categories").Find(&databaseCategories)
 
 		newEntry := services.NewMangaEntry(currentManga.URL)
 

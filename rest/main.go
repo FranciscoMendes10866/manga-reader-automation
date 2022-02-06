@@ -22,7 +22,8 @@ func main() {
 
 	r.Use(cors.Handler(helpers.CorsConfig))
 	r.Use(controllers.AuthorizationMiddleware)
-	r.Post("/api/v1/manga/scrap-on-demand", controllers.ScrapOnDemand)
+	r.Get("/api/manga/get-all", controllers.GetAllMangas)
+	r.Get("/api/manga/get-details/{mangaId}", controllers.GetMangaDetails)
 
 	http.ListenAndServe(":3333", r)
 }

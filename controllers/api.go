@@ -6,84 +6,32 @@ import (
 
 	"github.com/FranciscoMendes10866/queues/config"
 	"github.com/FranciscoMendes10866/queues/entities"
-	"github.com/FranciscoMendes10866/queues/helpers"
-	"github.com/FranciscoMendes10866/queues/services"
-	"github.com/FranciscoMendes10866/queues/tasks"
-	"github.com/FranciscoMendes10866/queues/types"
-	"github.com/hibiken/asynq"
+	"github.com/go-chi/chi/v5"
 )
 
-func ScrapOnDemand(w http.ResponseWriter, r *http.Request) {
-	var body types.IScrapOnDemandBody
-	json.NewDecoder(r.Body).Decode(&body)
+func GetAllMangas(w http.ResponseWriter, r *http.Request) {
+	var mangas []entities.MangaEntity
 
-	var databaseCategories []entities.CategoriesEntity
-	config.Database.Table("manga_entities").Find(&databaseCategories)
+	config.Database.Table("manga_entities").Find(&mangas)
 
-	newEntry := services.NewMangaEntry(body.URL)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(mangas)
+}
 
-	if len(databaseCategories) > 0 {
-		var categoriesToAdd []string
-		for _, category := range newEntry.Categories {
-			var categoryExists bool
-			for _, databaseCategory := range databaseCategories {
-				if category == databaseCategory.Name {
-					categoryExists = true
-				}
-			}
-			if !categoryExists {
-				categoriesToAdd = append(categoriesToAdd, category)
-			}
-		}
+func GetMangaDetails(w http.ResponseWriter, r *http.Request) {
+	mangaId := chi.URLParam(r, "mangaId")
 
-		if len(categoriesToAdd) > 0 {
-			for _, category := range categoriesToAdd {
-				var newCategory entities.CategoriesEntity
-				newCategory.Name = category
-				config.Database.Create(&newCategory)
-			}
-		}
-	}
+	var manga entities.MangaEntity
+	var chapters []entities.ChapterEntity
+	var categories []entities.CategoriesEntity
 
-	if len(newEntry.Name) > 2 {
-		newMangaEntry := new(entities.MangaEntity)
-		newMangaEntry.Name = newEntry.Name
-		newMangaEntry.Thumbnail = newEntry.Thumbnail
-		newMangaEntry.Description = newEntry.Description
+	config.Database.Table("manga_entities").Where("id = ?", mangaId).First(&manga)
+	config.Database.Table("chapter_entities").Where("manga_id = ?", mangaId).Find(&chapters)
+	config.Database.Table("manga_categories").Where("manga_entity_id = ?", mangaId).Find(&categories)
 
-		config.Database.Create(&newMangaEntry)
+	manga.Chapters = chapters
+	manga.Categories = categories
 
-		if len(newEntry.Chapters) > 0 && newMangaEntry.ID != "" {
-			client := asynq.NewClient(asynq.RedisClientOpt{Addr: helpers.RedisAddress})
-			defer client.Close()
-
-			task, _ := tasks.NewScrapSingleChapterTask(newMangaEntry.ID, newEntry.Chapters, newMangaEntry.Name)
-			client.Enqueue(task)
-
-			var categoriesToAdd []string
-			for _, category := range newEntry.Categories {
-				var categoryExists bool
-				for _, databaseCategory := range databaseCategories {
-					if category == databaseCategory.Name {
-						categoryExists = true
-					}
-				}
-				if !categoryExists {
-					categoriesToAdd = append(categoriesToAdd, category)
-				}
-			}
-
-			if len(categoriesToAdd) > 0 {
-				for _, category := range categoriesToAdd {
-					var newCategory entities.CategoriesEntity
-					config.Database.Where("name = ?", category).First(&newCategory)
-
-					config.Database.Table("manga_categories").Create(map[string]interface{}{
-						"manga_entity_id":      newMangaEntry.ID,
-						"categories_entity_id": newCategory.ID,
-					})
-				}
-			}
-		}
-	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(manga)
 }
