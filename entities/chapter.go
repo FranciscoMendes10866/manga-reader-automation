@@ -8,9 +8,9 @@ import (
 type ChapterEntity struct {
 	gorm.Model
 	ID      string        `gorm:"primaryKey;"`
-	Name    string        `json:"name" gorm:"not null;unique;index"`
+	Name    string        `json:"name" gorm:"not null;unique_index;index"`
 	MangaID string        `json:"manga_id" gorm:"not null"`
-	Pages   []PagesEntity `gorm:"foreignKey:ChapterID"`
+	Pages   []PagesEntity `json:"pages" gorm:"foreignKey:ChapterID"`
 }
 
 func (chapter *ChapterEntity) BeforeCreate(db *gorm.DB) error {

@@ -9,24 +9,23 @@ import (
 	"github.com/FranciscoMendes10866/queues/entities"
 	"github.com/FranciscoMendes10866/queues/helpers"
 	"github.com/FranciscoMendes10866/queues/services"
-	"github.com/FranciscoMendes10866/queues/types"
 	"github.com/hibiken/asynq"
 )
 
-const TypeScrapSingleChapter = "scrap:chapter"
+const TypeScrapSingleChapter = "scrap:chapter:single"
 
 type ScrapSingleChapterPayload struct {
-	MangaID   string
-	MangaName string
-	Chapters  []types.IManga
+	ChapterURL  string
+	ChapterName string
+	MangaID     string
 }
 
-func NewScrapSingleChapterTask(id string, chapters []types.IManga, MangaName string) (*asynq.Task, error) {
-	payload, err := json.Marshal(ScrapSingleChapterPayload{MangaID: id, MangaName: MangaName, Chapters: chapters})
+func NewScrapSingleChapterTask(chapterUrl string, chapterName string, mangaId string) (*asynq.Task, error) {
+	payload, err := json.Marshal(ScrapSingleChapterPayload{ChapterURL: chapterUrl, ChapterName: chapterName, MangaID: mangaId})
 	if err != nil {
 		return nil, err
 	}
-	return asynq.NewTask(TypeScrapSingleChapter, payload, asynq.Queue("chapterScrap")), nil
+	return asynq.NewTask(TypeScrapSingleChapter, payload, asynq.Queue("singleChapterScrap")), nil
 }
 
 func HandleScrapSingleChapterTask(ctx context.Context, t *asynq.Task) error {
@@ -35,47 +34,20 @@ func HandleScrapSingleChapterTask(ctx context.Context, t *asynq.Task) error {
 		return fmt.Errorf("json.Unmarshal failed: %v: %w", err, asynq.SkipRetry)
 	}
 
-	mangaId := payload.MangaID
-	chaptersData := payload.Chapters
+	pages := services.GetChapterPages(payload.ChapterURL)
 
-	var databaseChapters []entities.ChapterEntity
-	config.Database.Where("manga_id = ?", mangaId).Find(&databaseChapters)
+	newChapterEntry := new(entities.ChapterEntity)
+	newChapterEntry.Name = payload.ChapterName
+	newChapterEntry.MangaID = payload.MangaID
 
-	var newChapters []types.IManga
+	config.Database.Create(&newChapterEntry)
 
-	for _, chapter := range chaptersData {
-		var found bool
-		for _, databaseChapter := range databaseChapters {
-			if chapter.Name == databaseChapter.Name {
-				found = true
-				break
-			}
-		}
-		if !found {
-			newChapters = append(newChapters, chapter)
-		}
-	}
+	for _, page := range pages {
+		client := asynq.NewClient(asynq.RedisClientOpt{Addr: helpers.RedisAddress})
+		defer client.Close()
 
-	if len(newChapters) > 0 {
-		for _, chapter := range newChapters {
-			pages := services.GetChapterPages(chapter.URL)
-
-			if len(pages) > 0 {
-				newChapterEntry := new(entities.ChapterEntity)
-				newChapterEntry.Name = chapter.Name
-				newChapterEntry.MangaID = mangaId
-
-				config.Database.Create(&newChapterEntry)
-
-				for _, page := range pages {
-					client := asynq.NewClient(asynq.RedisClientOpt{Addr: helpers.RedisAddress})
-					defer client.Close()
-
-					task, _ := NewSaveSinglePageChapterTask(newChapterEntry.ID, page)
-					client.Enqueue(task)
-				}
-			}
-		}
+		task, _ := NewSaveSinglePageChapterTask(newChapterEntry.ID, page)
+		client.Enqueue(task)
 	}
 
 	return nil

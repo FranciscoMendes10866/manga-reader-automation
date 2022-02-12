@@ -88,7 +88,7 @@ func HandleScrapSingleMangaTask(ctx context.Context, t *asynq.Task) error {
 				client := asynq.NewClient(asynq.RedisClientOpt{Addr: helpers.RedisAddress})
 				defer client.Close()
 
-				task, _ := NewScrapSingleChapterTask(newDatabaseEntry.ID, newEntry.Chapters, newDatabaseEntry.Name)
+				task, _ := NewScrapChaptersTask(newDatabaseEntry.ID, newEntry.Chapters, newDatabaseEntry.Name)
 				client.Enqueue(task)
 
 				var categoriesToAdd []string
@@ -124,7 +124,7 @@ func HandleScrapSingleMangaTask(ctx context.Context, t *asynq.Task) error {
 			client := asynq.NewClient(asynq.RedisClientOpt{Addr: helpers.RedisAddress})
 			defer client.Close()
 
-			task, _ := NewScrapSingleChapterTask(mangaInstance.ID, newChapters, mangaInstance.Name)
+			task, _ := NewScrapChaptersTask(mangaInstance.ID, newChapters, mangaInstance.Name)
 			client.Enqueue(task)
 		}
 	}

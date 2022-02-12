@@ -5,8 +5,9 @@ var RedisAddress = "localhost:6379"
 var QueueProcessingConcurrency = 10
 
 var QueuesDefinitions = map[string]int{
-	"mangaScrap":     3,
-	"mangaListScrap": 2,
-	"chapterScrap":   3,
-	"savePage":       2,
+	"mangaScrap":         2,
+	"mangaListScrap":     2,
+	"chaptersScrap":      2,
+	"savePage":           2,
+	"singleChapterScrap": 2,
 }

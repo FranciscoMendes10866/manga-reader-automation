@@ -24,6 +24,7 @@ func main() {
 	r.Use(controllers.AuthorizationMiddleware)
 	r.Get("/api/manga/get-all", controllers.GetAllMangas)
 	r.Get("/api/manga/get-details/{mangaId}", controllers.GetMangaDetails)
+	r.Get("/api/chapter/{chapterId}", controllers.GetChapter)
 
 	http.ListenAndServe(":3333", r)
 }
