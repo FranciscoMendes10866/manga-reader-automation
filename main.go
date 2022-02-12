@@ -22,8 +22,9 @@ func main() {
 
 	mux.HandleFunc(tasks.TypeScheduled, tasks.HandleScheduledTask)
 	mux.HandleFunc(tasks.TypeScrapSingleManga, tasks.HandleScrapSingleMangaTask)
-	mux.HandleFunc(tasks.TypeScrapSingleChapter, tasks.HandleScrapSingleChapterTask)
+	mux.HandleFunc(tasks.TypeScrapChapters, tasks.HandleScrapChaptersTask)
 	mux.HandleFunc(tasks.TypeSaveSinglePageChapter, tasks.HandleSaveSinglePageChapterTask)
+	mux.HandleFunc(tasks.TypeScrapSingleChapter, tasks.HandleScrapSingleChapterTask)
 
 	srv.Run(mux)
 }
