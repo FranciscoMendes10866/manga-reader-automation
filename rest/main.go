@@ -25,6 +25,7 @@ func main() {
 	r.Get("/api/manga/get-all", controllers.GetAllMangas)
 	r.Get("/api/manga/get-details/{mangaId}", controllers.GetMangaDetails)
 	r.Get("/api/chapter/{chapterId}", controllers.GetChapter)
+	r.Get("/api/manga/latest", controllers.GetLatest)
 
 	http.ListenAndServe(":3333", r)
 }
