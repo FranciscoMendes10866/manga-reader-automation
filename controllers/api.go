@@ -74,8 +74,13 @@ func GetLatest(w http.ResponseWriter, r *http.Request) {
 		sort.Slice(currentManga.Chapters, func(i, j int) bool {
 			return currentManga.Chapters[i].CreatedAt.After(currentManga.Chapters[j].CreatedAt)
 		})
-		currentManga.Chapters = currentManga.Chapters[:2]
-		remapped = append(remapped, currentManga)
+
+		if len(currentManga.Chapters) >= 2 {
+			currentManga.Chapters = currentManga.Chapters[:2]
+			remapped = append(remapped, currentManga)
+		} else {
+			remapped = append(remapped, currentManga)
+		}
 	}
 
 	w.Header().Set("Content-Type", "application/json")
