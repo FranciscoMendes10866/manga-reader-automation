@@ -52,6 +52,13 @@ services:
         POSTGRES_USER: pg
     volumes:
         - postgres:/var/lib/postgresql/data
+  meilisearch:
+    container_name: meilisearch
+    image: getmeili/meilisearch:latest
+    ports:
+      - 7700:7700
+    volumes:
+      - meilisearch-data:/data.ms:/data.ms
 
 networks:
   my-network:
@@ -61,4 +68,5 @@ volumes:
     external: false
   postgres:
   memcached-data:
+  meilisearch-data:
   
